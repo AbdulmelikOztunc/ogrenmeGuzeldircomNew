@@ -117,6 +117,8 @@ body {
 		/* Add your existing styles */
 		width:360px; /* You can adjust the width as needed */
 		height: 360px; 
+		margin: 0;
+		padding: 0;
 	}
 	#start button{
 		font-size: 15px;
