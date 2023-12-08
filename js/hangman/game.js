@@ -25,10 +25,10 @@ $(document).ready(function()
 		$("#start button")
 		.hover(function(){
 			$(this)
-			.animate({width: "35%", height:"33%"}, 300)
+			.animate({width: "42%", height:"33%"}, 300)
 		},function(){
 			$(this)
-			.animate({width: "35%", height:"30%"}, 300)
+			.animate({width: "42%", height:"30%"}, 300)
 		})
 
 		$("#but1")

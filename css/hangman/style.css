@@ -12,12 +12,15 @@ body{
 }
 
 #start button{
-	width: 37%;
+	width: 40%;
 	height: 30%;
 	font-size: 35px;
 	font-weight: bold;
 	color: rgb(0, 140, 255);
 	border-radius: 20px;
+}
+#but2{
+	margin-left:2rem;
 }
 #level {
 	font-size: 45px;
@@ -121,7 +124,10 @@ body {
 		padding: 0;
 	}
 	#start button{
-		font-size: 15px;
+		font-size: 15px;		
+	}
+	#but2{
+		margin-left:1rem;
 	}
 	#level {
 		font-size: 25px;
