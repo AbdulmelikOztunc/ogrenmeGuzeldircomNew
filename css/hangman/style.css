@@ -115,8 +115,8 @@ body {
 	
 	.container {
 		/* Add your existing styles */
-		width:450px; /* You can adjust the width as needed */
-		height: 500px; 
+		width:360px; /* You can adjust the width as needed */
+		height: 360px; 
 	}
 	#start button{
 		font-size: 15px;
