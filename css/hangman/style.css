@@ -1,0 +1,161 @@
+body{
+	background-color: #202124;
+}
+
+#start{
+	font-size: 45px;
+	font-weight: bold;
+	text-align: center;	
+	padding-top: 7%;
+}
+
+#start button{
+	width: 37%;
+	height: 30%;
+	font-size: 35px;
+	font-weight: bold;
+	color: rgb(0, 140, 255);
+	border-radius: 20px;
+}
+#level {
+	font-size: 45px;
+	text-align: center;
+	color: blue;
+	font-weight: bold;
+	max-width: 90%;
+	min-height: 140px;
+	position: relative;	
+}
+
+#entered{
+	font-weight: bold;
+	font-size: 120%;
+	margin-top: 15px;
+}
+
+#level button{
+	color: rgb(121, 65, 39);
+	font-size: 40%;
+	background-color: rgb(70, 172, 104);	
+	font-weight: bold;
+	height: 10%;
+	width: 20%;
+	border-radius: 10px;
+}
+#gameArea {
+	color: rgb(66, 66, 245);
+	font-weight: bold;
+}
+#gameArea .menu{
+	height: 3%;
+	height: 60px;
+	width: 90px;
+	right: 10%;
+	border-radius: 10px;
+}
+
+#gameArea .area {
+	padding-left: 20px;
+	font-size: 20px;
+	font-family: Verdana;
+	font-weight: bold;
+	color: rgb(144, 144, 195);
+}
+
+#gameArea button{
+	color: white;
+	background-color: #FF6600;
+	text-align: center;
+	width: 90px;
+	height: 50px;
+}
+
+#letter {
+	color: rgb(255, 255, 255);
+	width: 200px;
+	height: 60px;
+	font-size: 30px;
+	border-radius: 10px;
+	background: rgb(52, 33, 5);
+}
+
+td div{
+	border-radius: 10px;
+	text-align: center;
+	text-justify: auto;
+	width: 40px;
+	height: 60px;
+	font-size: 2.5rem;
+}
+
+.none {
+	display: none;
+}
+body {
+	margin: 0;
+	padding: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	height: 100vh;
+}
+#images img{
+	width:90%;
+	height:300;
+}
+
+.container {
+	/* Add your existing styles */
+	width:800px; /* You can adjust the width as needed */
+	height: 500px; 
+}
+@media only screen and (max-width: 600px) {
+	
+	.container {
+		/* Add your existing styles */
+		width:360px; /* You can adjust the width as needed */
+		height: 500px; 
+	}
+	#start button{
+		font-size: 15px;
+	}
+	#level {
+		font-size: 25px;
+		text-align: center;
+		color: blue;
+		font-weight: bold;
+		max-width: 90%;
+		min-height: 100px;
+		position: relative;	
+	}
+	#gameArea .area {
+		padding-left: 12px;
+		font-size: 12px;
+		font-family: Verdana;
+		font-weight: bold;
+		color: rgb(144, 144, 195);
+	}
+	
+	td div{
+		
+		border-radius: 10px;
+		text-align: center;
+		text-justify: auto;
+        width: 20px;
+		height: 30px;
+		font-size: 1rem;					
+					
+	}
+	
+	#letter {		
+		width: 120px;
+		height: 30px;
+		font-size: 14px;
+		border-radius: 3px;		
+	}
+	#images img{
+		width:100%;
+		height:180;
+	}
+	
+}

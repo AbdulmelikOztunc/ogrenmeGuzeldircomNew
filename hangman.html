@@ -1,0 +1,72 @@
+<html>
+<head>
+	<title>Adam Asmaca</title>
+	<meta charset="utf-8">
+	<script src="js/hangman/sweet-alert.min.js"></script>
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+	<link rel="stylesheet" type="text/css" href="css/hangman/sweet-alert.css">
+	<link rel="stylesheet" type="text/css" href="css/hangman/style.css">
+	<script src="js/hangman/jquery-1.11.1.min.js"></script>
+	<script src="js/hangman/game.js"></script>
+</head>
+<body >
+<div class="container">
+	
+		<div id="start"><br>
+			<button id="but1">Türkçe > İngilizce</button>&nbsp;&nbsp;&nbsp;&nbsp;
+			<button id="but2">English > Turkish</button>
+		</div>
+
+		<div id="level" class="pt-4 none">
+			<!-- <div id="select">Lütfen Seviye seçin</div> -->
+			<hr style="position: absolute; top:0;width: 100%;height: 5px;">
+			<button id="b1">Kolay</button>
+			<button id="b2">Orta</button>
+			<button id="b3">Zor</button>
+			<hr style="position: absolute; bottom:0;width: 100%;height: 5px;">
+		</div>
+
+	
+		<div id="gameArea" class="row none">
+			<div class="row">				
+				<div class="col-8 area"><p id="gameText"></p>
+					<input type="text" name="letter" placeholder="" id="letter" class="mb-3 mt-5">
+					<table>
+						<tr>
+							<td><div id="h1"></div></td>
+							<td><div id="h2"></div></td>
+							<td><div id="h3"></div></td>
+							<td><div id="h4"></div></td>
+							<td><div id="h5"></div></td>
+							<td><div id="h6"></div></td>
+							<td><div id="h7"></div></td>
+							<td><div id="h8"></div></td>
+							<td><div id="h9"></div></td>
+							<td><div id="h10"></div></td>
+						</tr>	
+					</table>
+					<hr style="width: 100%;height: 5px;">
+					<p id="entered"></p>
+				</div>
+				<div class="col-4">
+					<div   id="images" >
+						<img id="image1" src="Image/hangman/game1.png" >
+						<img id="image2" src="Image/hangman/game2.png" >
+						<img id="image3" src="Image/hangman/game3.png" >
+						<img id="image4" src="Image/hangman/game4.png" >
+						<img id="image5" src="Image/hangman/game5.png" >
+						<img id="image6" src="Image/hangman/game6.png" >
+						<img id="image7" src="Image/hangman/game7.png" >
+						<img id="image8" src="Image/hangman/game8.png" >
+						<img id="image9" src="Image/hangman/game9.png" >
+						<img id="image10" src="Image/hangman/game10.png" >
+					</div> 
+				</div>
+			</div>			<!-- <div><button id="newGame" class="menu position-absolute">Yeni <br>Oyun</button></div> -->
+											
+		</div>
+	
+</div>
+
+</body>
+</html>

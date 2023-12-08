@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <title>Yılan Oyunu</title>
+    <style>
+          html,body {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #202124;
+            position: relative; 
+            }
+
+            .oyun{   
+                position: absolute;
+                left: 50% -360px;
+                top: 50% -360px;
+            }
+
+            .fa-star {
+                position: relative;
+                font-size: 1.8em; /* İkon boyutu */
+            }
+
+            .fa-star::after {
+                content: var(--content);
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                font-size: 0.4em; /* Sayı font boyutu */
+                color: rgb(247, 114, 6);
+                font-weight: bold;
+            }
+
+            .start {
+            
+                content: '';
+                color: white;
+                opacity: 0.4;
+            }
+
+            canvas {
+                border: 7px solid #568a34;
+            }
+            #questionDiv{
+                bottom:-65px;left: 10px;
+                background-color:rgba(103, 103, 103, 0.3);
+            }
+            #gameOver{
+                bottom: -180px;left: 30%;
+                background-color:rgba(103, 103, 103, 0.3);
+                z-index: -5;
+            } 
+            #yenidenOyna{
+                bottom: -220px;left: 35%;
+                background-color:rgba(103, 103, 103, 0.3);
+                z-index: -6;
+            }
+            #MobilHatirlatma{
+                bottom: -220px;left: 35%;
+                background-color:rgba(103, 103, 103, 0.3);
+                z-index: 35;
+            }
+    </style>
+</head>
+<body>
+    <div class="col position-absolute oyun" >
+        <div class="container ps-0 fs-3 position-relative">
+            <div class="question text-info position-absolute rounded-3 p-1" id="questionDiv" > </div> 
+            <div class="text-info position-absolute rounded-1 p-1 text-center" id="gameOver" > </div> 
+            <div class="btn btn-secondary text-info position-absolute rounded-1 p-1 text-center" id="yenidenOyna" >Yeniden Oyna</div> 
+            <div id="star" class="position-absolute mb-2   " style="height: 27px;right: 80px;bottom:15px ;"></div>
+            <div id="smile" class="p-0 mb-3" style="height: 27px;"></div>                   
+            <div class="position-absolute  p-0 text-info " style="bottom:-20px;right: 8px;" >Puan</div>
+            <div class="position-absolute end-0 text-info rounded-circle  px-3 bg-gradient h2" id="puan" style="bottom:5px">0</div>
+            <div class="text-info d-block d-md-none position-absolute rounded-1 p-1 text-center" id="MobilHatirlatma"><img src="Image/keys.svg" width="100px"><button class="rounded-3" onclick="playmobile()">Play</button></div>  
+        </div>
+        <canvas class="d-none d-md-block" id="canvas" width="420" height="420"></canvas>
+        <canvas class="d-block d-md-none" id="canvasmobile" width="360" height="360"></canvas>
+        <div class="start  d-none d-md-block  text-center">Yılan oyununu başlatmak için ok tuşlarına basın</div>
+    </div>
+    
+
+
+    <audio id="appleSound">
+      <source src="ses/Jump.mp3" type="audio/mp3">
+      Tarayıcınız audio elementini desteklemiyor.
+    </audio>
+    <audio id="snakeEatSound">
+        <source src="ses/yanlisyeme.wav" type="audio/mp3">
+        Tarayıcınız audio elementini desteklemiyor.
+    </audio>
+    <audio id="carpi2ses">
+        <source src="ses/yeme1.wav" type="audio/mp3">
+        Tarayıcınız audio elementini desteklemiyor.
+    </audio>
+    <audio id="yilancarpti">
+        <source src="ses/carpma.wav" type="audio/mp3">
+        Tarayıcınız audio elementini desteklemiyor.
+    </audio>
+    <audio id="donus">
+        <source src="ses/donus3.wav" type="audio/mp3">
+        Tarayıcınız audio elementini desteklemiyor.
+    </audio>
+   
+
+
+
+    <script>
+        if (/Mobi|Android/i.test(navigator.userAgent)) {
+            var canvas, ctx;
+            let options; 
+            let puan=0;
+            let gulenyuz=0;
+            let carpi2=0;
+            let ilk=1;
+            var appleSound = document.getElementById("appleSound");
+            var carpi2ses = document.getElementById("carpi2ses");
+            var turnsound = document.getElementById("donus");
+            var snakeEatSound = document.getElementById("snakeEatSound");
+            var snakeOver = document.getElementById("yilancarpti");
+            let sakeOverSoundStart=false;
+            window.onload = function () {
+            canvas = document.getElementById("canvasmobile");
+            ctx = canvas.getContext("2d");
+            document.addEventListener("touchstart", dokunmaBasladi);
+            document.addEventListener("touchmove", hareketEtti);
+            document.addEventListener("touchend", dokunmaBitti);
+
+            // saniyede X kere çiz
+            var x = 5;
+            gameInterval1 =setInterval(ciz, 1000 / x);
+            };
+            // oyun dünyası
+            var gridSize = 12;
+            var tileSize = 30; // her bir hücrenin genişliği
+            var nextX = (nextY = 0);
+
+            // yılan
+            var varsayilanKuyrukBoyutu = 4;
+            var kuyrukBoyutu = varsayilanKuyrukBoyutu;
+            var yilanIz = [];
+            var yilanX = (yilanY = 10);
+            
+            // elma
+            var elmalar = [];
+            function playmobile(){
+                document.getElementById("MobilHatirlatma").style.zIndex=-65;
+            }
+            // çiz
+            function ciz() {
+                // yılanı bir sonraki pozisyona hareket ettir
+                yilanX += nextX;
+                yilanY += nextY;
+
+                // yılan oyun dünyasının dışına çıktı mı?
+                if (yilanX < 0) {
+                    yilanX = gridSize - 1;
+                }
+                if (yilanX >= gridSize) {
+                    yilanX = 0;
+                }
+                if (yilanY < 0) {
+                    yilanY = gridSize - 1;
+                }
+                if (yilanY >= gridSize) {
+                    yilanY = 0;
+                }
+
+                // yılan elmaya çarptı mı?
+                for (var i = 0; i < elmalar.length; i++) {
+                    if (yilanX == elmalar[i].x && yilanY == elmalar[i].y) {
+                        kuyrukBoyutu++;
+
+                            
+                        elmayiyakaladi(i);
+            
+                    }
+                }
+
+                // arka planı boyayın
+                ctx.fillStyle = "#1C1D24";         
+                    // İki tonlu zemin renkleri
+                    var color1 = "#a2d149";
+                    var color2 = "#aad351"; 
+                // İki tonlu desenin başlangıç rengini belirlemek için bir değişken
+                var currentColor = color1;
+    
+                for (var row = 0; row < gridSize; row++) {
+                for (var col = 0; col < gridSize; col++) {
+                    // Değişen renkleri kullanarak sıradaki kareyi boyayın
+                    ctx.fillStyle = currentColor;
+                    ctx.fillRect(col * tileSize, row * tileSize, tileSize, tileSize);
+                    // Rengi değiştirin
+                    currentColor = (currentColor === color1) ? color2 : color1;
+                }
+                // Sıradaki satıra geçerken rengi değiştirin
+                    currentColor = (currentColor === color1) ? color2 : color1;
+                }
+
+                // yılanı boyayın           
+                for (var i = 0; i < yilanIz.length; i++) {
+                    if (i==yilanIz.length-1) {
+                        drawCircle(yilanIz[i].x * tileSize+tileSize/2,  yilanIz[i].y * tileSize+tileSize/2, 6*tileSize/11,"#f775ea")
+                    
+                    }else if(i==0){
+                        drawCircle(yilanIz[i].x * tileSize+tileSize/2,  yilanIz[i].y * tileSize+tileSize/2, 2*tileSize/5,"#faa7e5")
+
+                    }else{
+                        drawCircle(yilanIz[i].x * tileSize+tileSize/2,  yilanIz[i].y * tileSize+tileSize/2, tileSize/2,"#faa7e5")
+
+                    };
+
+                    // yılan kendi kuyruğuna çarptı mı?
+                    if (sakeOverSoundStart==true){
+                        if (yilanIz[i].x == yilanX && yilanIz[i].y == yilanY) {
+                        kuyrukBoyutu = varsayilanKuyrukBoyutu;                    
+                        playsnakeEnd();                   
+                        gameOver();
+                    }}
+                }
+
+                // elmaları çiz
+                for (var i = 0; i < elmalar.length; i++) {         
+                    drawCircle(elmalar[i].x * tileSize + tileSize / 2, elmalar[i].y * tileSize + tileSize / 2, tileSize / 2, "rgb(247, 114, 6)");
+                }                             
+                
+
+                // yılan izini ayarla
+                yilanIz.push({ x: yilanX, y: yilanY });
+                while (yilanIz.length > kuyrukBoyutu) {
+                    yilanIz.shift();
+                }
+                // Cevapları elmanın üzerine ekleyin            
+                ctx.fillStyle = "white";
+                for (let i = 0; i < elmalar.length; i++) {            
+                    
+                    ctx.font = "bold 16px Arial";
+                    ctx.fillText(options[i], elmalar[i].x * tileSize + 8, elmalar[i].y * tileSize + 22);
+                    
+                }
+            }//ciz fonksiyonu bitti
+
+            function drawCircle(x, y, radius,color) {
+                ctx.beginPath();
+                ctx.arc(x, y, radius, 0, 2 * Math.PI);
+                ctx.fillStyle = color; // Yuvarlağın iç rengi
+                ctx.fill();
+                ctx.strokeStyle = "#d1d1d1"; // Yuvarlağın kenar rengi
+                ctx.lineWidth = 1; // Kenar kalınlığı
+                ctx.stroke();
+                ctx.closePath();
+            }   
+
+            var startX, startY, endX, endY;
+        
+            function dokunmaBasladi(e) {
+                e.preventDefault();           
+                var touch = e.touches[0];
+                startX = touch.clientX;
+                startY = touch.clientY;
+            }
+        
+            function hareketEtti(e) {
+                e.preventDefault();
+              setTimeout(() => {
+                sakeOverSoundStart=true;
+              }, 1000);  
+                var touch = e.touches[e.touches.length - 1];
+                endX = touch.clientX;
+                endY = touch.clientY;
+            }
+            
+            function dokunmaBitti(e) {
+                var deltaX = endX - startX;
+                var deltaY = endY - startY;
+            
+            
+                if (Math.abs(deltaX) > Math.abs(deltaY)) {
+                    // Horizontal swipe
+                    if (deltaX > 0) {
+                        nextX = 1;
+                        nextY = 0;
+                        playturnsound() 
+                    } else if (deltaX < 0 && nextX !== 1) {
+                        nextX = -1;
+                        nextY = 0;
+                        playturnsound() 
+                    }
+                } else {
+                    // Vertical swipe
+                    if (deltaY > 0 && nextY !== -1) {
+                        nextX = 0;
+                        nextY = 1;
+                        playturnsound() 
+                    } else if (deltaY < 0 && nextY !== 1) {
+                        nextX = 0;
+                        nextY = -1;
+                        playturnsound() 
+                    }
+                }
+            }
+
+
+
+        
+            function oyunuBaslat() {
+                    // iki adet elma oluştur
+                do {
+                    for (var i = 0; i < 2; i++) {
+                        elmalar.push({
+                            x: Math.floor(Math.random() * gridSize),
+                            y: Math.floor(Math.random() * gridSize)
+                        });
+                    }
+                } while (elmalar[0].x==elmalar[1].x && elmalar[0].y==elmalar[1].y  ); 
+                    updateUI()
+            }
+
+
+                //çarpım tablosu koleksiyonu
+                var carpimTablosu = [];
+
+            for (var i = 1; i <= 10; i++) {
+                for (var j = 1; j <= 10; j++) {
+                    var soru = i + "x" + j;
+                    var cevap = i * j;
+
+                    carpimTablosu.push({
+                        question: soru,
+                        answer: cevap
+                    });
+                }
+            }
+
+
+            function getRandomQuestion() {
+                var randomIndex = Math.floor(Math.random() * carpimTablosu.length);
+                var question = carpimTablosu[randomIndex].question;
+                var answer = carpimTablosu[randomIndex].answer;
+
+                // Eğer options dizisi varsa ve şu anki soru ile aynı ise, yeni bir soru al
+                while (options && options[0] === answer) {
+                    randomIndex = Math.floor(Math.random() * carpimTablosu.length);
+                    question = carpimTablosu[randomIndex].question;
+                    answer = carpimTablosu[randomIndex].answer;
+                }
+
+                return {
+                    question: question,
+                    answer: answer
+                };
+            }
+
+            function playAppleSound() {
+                    appleSound.currentTime = 0; // Ses dosyasını başa sar
+                    appleSound.play();
+                }
+            function playcarpi2ses() {
+                    carpi2ses.currentTime = 0; // Ses dosyasını başa sar
+                    carpi2ses.play();
+                } 
+            function playturnsound() {
+                    turnsound.currentTime = 0; // Ses dosyasını başa sar
+                    turnsound.volume = 0.5;
+                    turnsound.play();                   
+                } 
+            function playyanlisyeme() {
+                    snakeEatSound.currentTime = 0; // Ses dosyasını başa sar
+                    snakeEatSound.play();
+                }
+            function playsnakeEnd() {
+                    snakeOver.currentTime = 0; // Ses dosyasını başa sar
+                    snakeOver.play();
+                }
+            function updateUI() {
+                        var randomQuestion = getRandomQuestion();
+    
+                        // Soruyu ekrana yazdır
+                        document.getElementById("questionDiv").textContent = randomQuestion.question +"=?";
+    
+                        // Cevapları olşutur
+                       options = [
+                            randomQuestion.answer,
+                            getRandomQuestion().answer                   
+                        ];
+                }
+                    
+            function elmayiyakaladi(hangielma) {
+                        var randomQuestion = getRandomQuestion();
+                      do {
+                        var randomQuestionfalse = getRandomQuestion();
+                      } while (randomQuestion.answer==randomQuestionfalse.answer);  
+                        
+                      let state=false;
+                      if(hangielma==0){
+                           state=true;
+                           playAppleSound()
+                        }
+                      // Soruyu ekrana yazdır
+                      document.getElementById("questionDiv").textContent = randomQuestion.question +"=?";
+    
+                      // Cevapları olşutur
+                       
+                      options = [
+                           randomQuestion.answer,
+                           randomQuestionfalse.answer
+                        
+                        ];
+                      for (let index = 0; index < 2; index++) {
+                               elmalar[index].x = Math.floor(Math.random() * gridSize);
+                               elmalar[index].y = Math.floor(Math.random() * gridSize);
+                                
+                        }
+                      if(state==true){
+                           updateUItrue()
+                        }else{
+                           playyanlisyeme()
+                           updateUIfalse()
+                        }                
+            }
+    
+                    
+            function updateUItrue() {
+                     puan=puan + 2**carpi2   
+                    document.getElementById("puan").textContent=puan;
+                    if (gulenyuz==0) {document.getElementById("smile").innerHTML ="";}
+                    gulenyuz++;                
+                    document.getElementById("smile").innerHTML += "<i class='fa-solid fa-face-grin-tears text-warning' style='width:27px'></i> ";
+                     if (gulenyuz==3) {
+                        carpi2++;
+                        gulenyuz=0;
+                        document.getElementById("star").innerHTML ="<i class='fa-solid fa-star text-warning' style='--content: ''x2'';'></i> ";  
+                        document.getElementById("smile").innerHTML ="";
+                        var starElement = document.querySelector('.fa-star');
+                        starElement.style.setProperty('--content', "'x" + (2 ** carpi2) + "'");   
+                        playcarpi2ses();
+                        
+                     }
+            }
+    
+            function updateUIfalse() {
+                        document.getElementById("smile").innerHTML ="";
+                        gulenyuz=0;
+                        document.getElementById("smile").innerHTML += "<i class='fa-solid fa-face-frown text-danger' style='width:27px'></i> ";
+            }
+            function gameOver() {
+                        clearInterval(gameInterval1); // Oyun döngüsünü durdur
+                        document.getElementById("gameOver").innerHTML = "Game Over! </br> Puanınız: " + puan;
+                        document.getElementById("gameOver").style.zIndex=101;
+                        var buton = document.getElementById("yenidenOyna");
+                        buton.style.zIndex = 101;
+                        document.getElementById("canvas").style.opacity = 0.4;
+    
+                        buton.addEventListener("click", function () {
+                            location.reload();
+                        });
+    
+                        
+            }
+            // oyunu başlat fonksiyonunu çağır
+            oyunuBaslat();
+
+
+
+
+        } else {
+        var canvas, ctx;
+        let options; 
+        let puan=0;
+        let gulenyuz=0;
+        let carpi2=0;
+        let ilk=1;
+        var appleSound = document.getElementById("appleSound");
+        var carpi2ses = document.getElementById("carpi2ses");
+        var turnsound = document.getElementById("donus");
+        var snakeEatSound = document.getElementById("snakeEatSound");
+        var snakeOver = document.getElementById("yilancarpti");
+        let sakeOverSoundStart=false;
+        window.onload = function () {
+            canvas = document.getElementById("canvas");
+            ctx = canvas.getContext("2d");
+            document.addEventListener("keydown", klavyeTusBasildi);
+            // saniyede X kere çiz
+            var x = 5;
+            gameInterval =  setInterval(ciz, 1000 / x);
+        };
+
+        // oyun dünyası
+        var gridSize = 14;
+        var tileSize = 30; // her bir hücrenin genişliği
+        var nextX = (nextY = 0);
+
+        // yılan
+        var varsayilanKuyrukBoyutu = 4;
+        var kuyrukBoyutu = varsayilanKuyrukBoyutu;
+        var yilanIz = [];
+        var yilanX = (yilanY = 10);
+        
+        // elma
+        var elmalar = [];
+
+        // çiz
+        function ciz() {
+            // yılanı bir sonraki pozisyona hareket ettir
+            yilanX += nextX;
+            yilanY += nextY;
+
+            // yılan oyun dünyasının dışına çıktı mı?
+            if (yilanX < 0) {
+                yilanX = gridSize - 1;
+            }
+            if (yilanX >= gridSize) {
+                yilanX = 0;
+            }
+            if (yilanY < 0) {
+                yilanY = gridSize - 1;
+            }
+            if (yilanY >= gridSize) {
+                yilanY = 0;
+            }
+
+            // yılan elmaya çarptı mı?
+            for (var i = 0; i < elmalar.length; i++) {
+                if (yilanX == elmalar[i].x && yilanY == elmalar[i].y) {
+                    kuyrukBoyutu++;
+
+                        
+                    elmayiyakaladi(i);
+           
+                }
+            }
+
+            // arka planı boyayın
+            ctx.fillStyle = "#1C1D24";         
+            // İki tonlu zemin renkleri
+            var color1 = "#a2d149";
+            var color2 = "#aad351"; 
+            // İki tonlu desenin başlangıç rengini belirlemek için bir değişken
+            var currentColor = color1;
+
+            for (var row = 0; row < gridSize; row++) {
+               for (var col = 0; col < gridSize; col++) {
+                    // Değişen renkleri kullanarak sıradaki kareyi boyayın
+                    ctx.fillStyle = currentColor;
+                    ctx.fillRect(col * tileSize, row * tileSize, tileSize, tileSize);
+                    // Rengi değiştirin
+                    currentColor = (currentColor === color1) ? color2 : color1;
+                }
+                // Sıradaki satıra geçerken rengi değiştirin
+                currentColor = (currentColor === color1) ? color2 : color1;
+            }
+
+            // yılanı boyayın           
+            for (var i = 0; i < yilanIz.length; i++) {
+                if (i==yilanIz.length-1) {
+                    drawCircle(yilanIz[i].x * tileSize+tileSize/2,  yilanIz[i].y * tileSize+tileSize/2, 6*tileSize/11,"#f775ea")
+                   
+                }else if(i==0){
+                    drawCircle(yilanIz[i].x * tileSize+tileSize/2,  yilanIz[i].y * tileSize+tileSize/2, 2*tileSize/5,"#faa7e5")
+
+                }else{
+                    drawCircle(yilanIz[i].x * tileSize+tileSize/2,  yilanIz[i].y * tileSize+tileSize/2, tileSize/2,"#faa7e5")
+
+                };
+
+                // yılan kendi kuyruğuna çarptı mı?
+                if (sakeOverSoundStart==true){
+                    if (yilanIz[i].x == yilanX && yilanIz[i].y == yilanY) {
+                    kuyrukBoyutu = varsayilanKuyrukBoyutu;                    
+                    playsnakeEnd();                   
+                    gameOver();
+                }}
+            }
+
+            // elmaları çiz
+            for (var i = 0; i < elmalar.length; i++) {              
+                         drawCircle(elmalar[i].x * tileSize + tileSize / 2, elmalar[i].y * tileSize + tileSize / 2, tileSize / 2, "rgb(247, 114, 6)");
+            }                           
+            
+
+            // yılan izini ayarla
+            yilanIz.push({ x: yilanX, y: yilanY });
+            while (yilanIz.length > kuyrukBoyutu) {
+                yilanIz.shift();
+            }
+            // Cevapları elmanın üzerine ekleyin            
+            ctx.fillStyle = "white";
+            for (let i = 0; i < elmalar.length; i++) {             
+                
+                ctx.font = "bold 16px Arial";
+                ctx.fillText(options[i], elmalar[i].x * tileSize + 8, elmalar[i].y * tileSize + 22);
+                
+            }
+        }//ciz fonksiyonu bitti
+        
+        function drawCircle(x, y, radius,color) {
+                ctx.beginPath();
+                ctx.arc(x, y, radius, 0, 2 * Math.PI);
+                ctx.fillStyle = color; // Yuvarlağın iç rengi
+                ctx.fill();
+                ctx.strokeStyle = "#d1d1d1"; // Yuvarlağın kenar rengi
+                ctx.lineWidth = 1; // Kenar kalınlığı
+                ctx.stroke();
+                ctx.closePath();
+           }
+            // kullanıcı girişi
+        function klavyeTusBasildi(e) {
+            sakeOverSoundStart=true;
+           if(ilk==1){
+            switch (e.keyCode) {
+                case 37: // sol
+                    nextX = -1;
+                    nextY = 0;
+                    break;
+                case 38: // yukarı
+                    nextX = 0;
+                    nextY = -1;
+                    break;
+                case 39: // sağ
+                    nextX = 1;
+                    nextY = 0;
+                    break;
+                case 40: // aşağı
+                    nextX = 0;
+                    nextY = 1;
+                    break;
+                }
+                ilk++;
+                }else{
+                // Yılanın şu andaki hareket yönünü kontrol et
+                // Yatay hareket
+                if (nextX === 0) {
+                    setTimeout(function() { switch (e.keyCode) {
+                        case 37: // sol
+                            nextX = -1;
+                            nextY = 0;
+                            playturnsound()
+                            break;
+                        case 39: // sağ
+                            nextX = 1;
+                            nextY = 0;
+                            playturnsound()
+                            break;
+                        }}, 120);
+                }
+                // Dikey hareket
+                else if (nextY === 0) {
+                    
+                    setTimeout(function() {switch (e.keyCode) {
+                        case 38: // yukarı
+                            nextX = 0;
+                            nextY = -1;
+                            playturnsound()
+                            break;
+                        case 40: // aşağı
+                            nextX = 0;
+                            nextY = 1;
+                            playturnsound()
+                            break;
+                    }}, 120);
+                }
+        }}
+        // oyunu başlat
+        function oyunuBaslat() {
+            // iki adet elma oluştur
+           do {
+            for (var i = 0; i < 2; i++) {
+                elmalar.push({
+                    x: Math.floor(Math.random() * gridSize),
+                    y: Math.floor(Math.random() * gridSize)
+                });
+            }
+           } while (elmalar[0].x==elmalar[1].x && elmalar[0].y==elmalar[1].y  ); 
+            updateUI()
+        }
+
+
+        //çarpım tablosu koleksiyonu
+        var carpimTablosu = [];
+
+        for (var i = 1; i <= 10; i++) {
+            for (var j = 1; j <= 10; j++) {
+                var soru = i + "x" + j;
+                var cevap = i * j;
+
+                carpimTablosu.push({
+                    question: soru,
+                    answer: cevap
+                });
+            }
+        }
+
+
+        function getRandomQuestion() {
+            var randomIndex = Math.floor(Math.random() * carpimTablosu.length);
+            var question = carpimTablosu[randomIndex].question;
+            var answer = carpimTablosu[randomIndex].answer;
+
+             // Eğer options dizisi varsa ve şu anki soru ile aynı ise, yeni bir soru al
+            while (options && options[0] === answer) {
+                randomIndex = Math.floor(Math.random() * carpimTablosu.length);
+                question = carpimTablosu[randomIndex].question;
+                answer = carpimTablosu[randomIndex].answer;
+                }
+
+            return {
+                    question: question,
+                    answer: answer
+                };
+            }
+
+        function playAppleSound() {
+                appleSound.currentTime = 0; // Ses dosyasını başa sar
+                appleSound.play();
+            }
+        function playcarpi2ses() {
+                carpi2ses.currentTime = 0; // Ses dosyasını başa sar
+                carpi2ses.play();
+            } 
+        function playturnsound() {
+                turnsound.currentTime = 0; // Ses dosyasını başa sar
+                turnsound.volume = 0.5;                
+                turnsound.play();
+            } 
+        function playyanlisyeme() {
+                snakeEatSound.currentTime = 0; // Ses dosyasını başa sar
+                snakeEatSound.play();
+            }
+        function playsnakeEnd() {
+                snakeOver.currentTime = 0; // Ses dosyasını başa sar
+                snakeOver.play();
+            }
+        function updateUI() {
+                    var randomQuestion = getRandomQuestion();
+
+                    // Soruyu ekrana yazdır
+                    document.getElementById("questionDiv").textContent = randomQuestion.question +"=?";
+
+                    // Cevapları olşutur
+                   options = [
+                        randomQuestion.answer,
+                        getRandomQuestion().answer                   
+                    ];
+            }
+                
+        function elmayiyakaladi(hangielma) {
+                    var randomQuestion = getRandomQuestion();
+                  do {
+                    var randomQuestionfalse = getRandomQuestion();
+                  } while (randomQuestion.answer==randomQuestionfalse.answer);  
+                    
+                  let state=false;
+                  if(hangielma==0){
+                       state=true;
+                       playAppleSound()
+                    }
+                  // Soruyu ekrana yazdır
+                  document.getElementById("questionDiv").textContent = randomQuestion.question +"=?";
+
+                  // Cevapları olşutur
+                   
+                  options = [
+                       randomQuestion.answer,
+                       randomQuestionfalse.answer
+                    
+                    ];
+                  for (let index = 0; index < 2; index++) {
+                           elmalar[index].x = Math.floor(Math.random() * gridSize);
+                           elmalar[index].y = Math.floor(Math.random() * gridSize);
+                            
+                    }
+                  if(state==true){
+                       updateUItrue()
+                    }else{
+                       playyanlisyeme()
+                       updateUIfalse()
+                    }                
+            }
+
+                
+        function updateUItrue() {
+                 puan=puan + 2**carpi2   
+                document.getElementById("puan").textContent=puan;
+                if (gulenyuz==0) {document.getElementById("smile").innerHTML ="";}
+                gulenyuz++;                
+                document.getElementById("smile").innerHTML += "<i class='fa-solid fa-face-grin-tears text-warning' style='width:27px'></i> ";
+                 if (gulenyuz==3) {
+                    carpi2++;
+                    gulenyuz=0;
+                    document.getElementById("star").innerHTML ="<i class='fa-solid fa-star text-warning' style='--content: ''x2'';'></i> ";  
+                    document.getElementById("smile").innerHTML ="";
+                    var starElement = document.querySelector('.fa-star');
+                    starElement.style.setProperty('--content', "'x" + (2 ** carpi2) + "'");   
+                    playcarpi2ses();
+                    
+                 }
+        }
+
+        function updateUIfalse() {
+                    document.getElementById("smile").innerHTML ="";
+                    gulenyuz=0;
+                    document.getElementById("smile").innerHTML += "<i class='fa-solid fa-face-frown text-danger' style='width:27px'></i> ";
+                }
+                function gameOver() {
+                    clearInterval(gameInterval); // Oyun döngüsünü durdur
+                    document.getElementById("gameOver").innerHTML = "Game Over! </br> Puanınız: " + puan;
+                    document.getElementById("gameOver").style.zIndex=101;
+                    var buton = document.getElementById("yenidenOyna");
+                    buton.style.zIndex = 101;
+                    document.getElementById("canvas").style.opacity = 0.4;
+
+                    buton.addEventListener("click", function () {
+                        location.reload();
+                    });
+
+                    
+        }
+
+
+        // oyunu başlat fonksiyonunu çağır
+        oyunuBaslat();
+
+
+       
+
+
+    }
+    </script>
+    <script src="https://kit.fontawesome.com/7ca790732f.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+</body>
+</html>
